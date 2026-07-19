@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Sandbox // Twitter & Instagram Clones</title>
+  
+  <!-- Font integration -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Icon library -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="twitter-theme">
+
+  <!-- Floating Workspace Switcher -->
+  <div class="workspace-switcher-bar">
+    <button class="switch-tab-btn active" data-target="twitter" id="switch-btn-twitter">
+      <i class="fa-brands fa-twitter"></i>
+      <span>Twitter Clone</span>
+    </button>
+    <button class="switch-tab-btn" data-target="instagram" id="switch-btn-instagram">
+      <i class="fa-brands fa-instagram"></i>
+      <span>Instagram Clone</span>
+    </button>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TWITTER / X CLONE WORKSPACE -->
+  <!-- ========================================== -->
+  <div class="app-layout twitter-layout" id="twitter-workspace">
+    <!-- TW-LEFT SIDEBAR -->
+    <aside class="tw-sidebar">
+      <div class="tw-logo">
+        <i class="fa-brands fa-twitter"></i>
+      </div>
+      <nav class="tw-nav">
+        <a href="#" class="tw-nav-link active"><i class="fa-solid fa-house"></i> <span>Home</span></a>
+        <a href="#" class="tw-nav-link"><i class="fa-solid fa-magnifying-glass"></i> <span>Explore</span></a>
+        <a href="#" class="tw-nav-link"><i class="fa-regular fa-bell"></i> <span>Notifications</span></a>
+        <a href="#" class="tw-nav-link"><i class="fa-regular fa-envelope"></i> <span>Messages</span></a>
+        <a href="#" class="tw-nav-link"><i class="fa-regular fa-bookmark"></i> <span>Bookmarks</span></a>
+        <a href="#" class="tw-nav-link"><i class="fa-regular fa-user"></i> <span>Profile</span></a>
+      </nav>
+      <button class="btn btn-tw-post" id="btn-tw-sidebar-post">Post</button>
+      
+      <!-- User Profile Card -->
+      <div class="tw-profile-footer" id="tw-profile-trigger">
+        <img src="" alt="Avatar" class="tw-user-avatar current-user-avatar-sm">
+        <div class="tw-profile-info">
+          <span class="tw-profile-name" id="tw-user-display-name">Loading...</span>
+          <span class="tw-profile-handle" id="tw-user-handle">@handle</span>
+        </div>
+        <i class="fa-solid fa-ellipsis tw-profile-dots"></i>
+      </div>
+    </aside>
+
+    <!-- TW-CENTER COLUMN FEED -->
+    <main class="tw-main">
+      <header class="tw-header">
+        <h2>Home</h2>
+        <div class="tw-header-tabs">
+          <div class="tw-header-tab active"><span>For you</span></div>
+          <div class="tw-header-tab"><span>Following</span></div>
+        </div>
+      </header>
+
+      <!-- Tweet Composer -->
+      <div class="tw-composer">
+        <img src="" alt="Avatar" class="tw-user-avatar current-user-avatar-sm">
+        <div class="tw-composer-content">
+          <textarea id="tw-tweet-textarea" placeholder="What is happening?!" rows="2" maxlength="280"></textarea>
+          <div class="tw-composer-actions">
+            <div class="tw-composer-tools">
+              <button class="tw-tool-btn"><i class="fa-regular fa-image"></i></button>
+              <button class="tw-tool-btn"><i class="fa-solid fa-square-poll-horizontal"></i></button>
+              <button class="tw-tool-btn"><i class="fa-regular fa-face-smile"></i></button>
+              <button class="tw-tool-btn"><i class="fa-regular fa-calendar"></i></button>
+            </div>
+            <div class="tw-composer-submit">
+              <span class="tw-char-count" id="tw-char-counter">280</span>
+              <button class="btn btn-tw-blue" id="btn-post-tweet">Post</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tweets list -->
+      <div class="tw-timeline-list" id="tw-timeline-tweets">
+        <!-- Rendered Dynamically -->
+      </div>
+    </main>
+
+    <!-- TW-RIGHT WIDGETS -->
+    <aside class="tw-right-sidebar">
+      <div class="tw-search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search">
+      </div>
+      
+      <div class="tw-widget-card">
+        <h3>Subscribe to Premium</h3>
+        <p>Subscribe to unlock new features and if eligible, receive a share of ads revenue.</p>
+        <button class="btn btn-tw-widget">Subscribe</button>
+      </div>
+
+      <div class="tw-widget-card">
+        <h3>Trends for you</h3>
+        <div class="tw-trend-item">
+          <span class="tw-trend-category">Technology · Trending</span>
+          <span class="tw-trend-title">#MERNStack</span>
+          <span class="tw-trend-count">12.5K posts</span>
+        </div>
+        <div class="tw-trend-item">
+          <span class="tw-trend-category">Databases · Trending</span>
+          <span class="tw-trend-title">MongoDB Atlas</span>
+          <span class="tw-trend-count">8.4K posts</span>
+        </div>
+        <div class="tw-trend-item">
+          <span class="tw-trend-category">Web Development · Trending</span>
+          <span class="tw-trend-title">#ExpressJS</span>
+          <span class="tw-trend-count">24.2K posts</span>
+        </div>
+      </div>
+
+      <!-- Accounts simulator panel -->
+      <div class="tw-widget-card">
+        <h3>Simulated Context Accounts</h3>
+        <div class="tw-suggestions-list" id="tw-simulator-accounts">
+          <!-- Loaded Dynamically -->
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- INSTAGRAM CLONE WORKSPACE -->
+  <!-- ========================================== -->
+  <div class="app-layout instagram-layout hidden" id="instagram-workspace">
+    <!-- IG-LEFT SIDEBAR -->
+    <aside class="ig-sidebar">
+      <div class="ig-logo-area">
+        <span class="ig-logo-text">Instagram</span>
+        <i class="fa-brands fa-instagram ig-logo-icon"></i>
+      </div>
+      <nav class="ig-nav">
+        <a href="#" class="ig-nav-link active"><i class="fa-solid fa-house"></i> <span>Home</span></a>
+        <a href="#" class="ig-nav-link"><i class="fa-solid fa-magnifying-glass"></i> <span>Search</span></a>
+        <a href="#" class="ig-nav-link"><i class="fa-regular fa-compass"></i> <span>Explore</span></a>
+        <a href="#" class="ig-nav-link"><i class="fa-solid fa-clapperboard"></i> <span>Reels</span></a>
+        <a href="#" class="ig-nav-link"><i class="fa-regular fa-paper-plane"></i> <span>Messages</span></a>
+        <a href="#" class="ig-nav-link"><i class="fa-regular fa-heart"></i> <span>Notifications</span></a>
+        <a href="#" class="ig-nav-link" id="btn-ig-sidebar-create"><i class="fa-regular fa-square-plus"></i> <span>Create</span></a>
+        <a href="#" class="ig-nav-link"><i class="fa-regular fa-user"></i> <span>Profile</span></a>
+      </nav>
+      <div class="ig-more-menu">
+        <i class="fa-solid fa-bars"></i> <span>More</span>
+      </div>
+    </aside>
+
+    <!-- IG-MAIN CONTAINER -->
+    <main class="ig-main">
+      <div class="ig-feed-container">
+        <!-- Stories bar -->
+        <div class="ig-stories-bar">
+          <div class="ig-story-item">
+            <div class="ig-story-ring"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Story"></div>
+            <span>composer</span>
+          </div>
+          <div class="ig-story-item">
+            <div class="ig-story-ring"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Story"></div>
+            <span>react_dev</span>
+          </div>
+          <div class="ig-story-item">
+            <div class="ig-story-ring"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" alt="Story"></div>
+            <span>mongodb_fan</span>
+          </div>
+          <div class="ig-story-item">
+            <div class="ig-story-ring"><img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Story"></div>
+            <span>alex_web</span>
+          </div>
+          <div class="ig-story-item">
+            <div class="ig-story-ring"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80" alt="Story"></div>
+            <span>lucy_design</span>
+          </div>
+        </div>
+
+        <!-- Instagram Feed Posts -->
+        <div class="ig-feed-list" id="ig-feed-posts">
+          <!-- Loaded Dynamically -->
+        </div>
+      </div>
+
+      <!-- IG-RIGHT SIDEBAR (SUGGESTIONS) -->
+      <aside class="ig-right-sidebar">
+        <!-- Current Profile -->
+        <div class="ig-profile-card">
+          <img src="" alt="Avatar" class="ig-user-avatar current-user-avatar-sm">
+          <div class="ig-profile-info">
+            <span class="ig-profile-username" id="ig-user-handle-name">username</span>
+            <span class="ig-profile-display" id="ig-user-display-fullname">Full Name</span>
+          </div>
+          <button class="ig-action-link-btn text-blue" onclick="showAccountSwitcherModal()">Switch</button>
+        </div>
+
+        <!-- Suggestions header -->
+        <div class="ig-suggestions-header">
+          <span>Suggested for you</span>
+          <button class="ig-action-link-btn text-white">See All</button>
+        </div>
+
+        <!-- Suggestions list -->
+        <div class="ig-suggestions-list" id="ig-simulated-suggestions">
+          <!-- Loaded Dynamically -->
+        </div>
+
+        <div class="ig-footer-links">
+          <p>© 2026 INSTAGRAM SANDBOX FROM DEEPMIND ANTIGRAVITY</p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Toast notification system -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: INSTAGRAM CREATE DRAFT POST -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="ig-create-modal">
+    <div class="ig-modal-card">
+      <div class="ig-modal-header">
+        <button class="ig-modal-back-btn" onclick="closeInstagramCreateModal()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Create new post</h3>
+        <button class="ig-modal-share-btn" id="btn-ig-submit-post">Share</button>
+      </div>
+      <div class="ig-modal-body">
+        <form id="ig-composer-form" enctype="multipart/form-data" class="ig-create-form">
+          <input type="hidden" id="ig-post-id" name="id">
+          <!-- Left half: Media upload & crop preview -->
+          <div class="ig-create-media-section" id="ig-media-dropzone">
+            <input type="file" id="ig-post-media" name="media" accept="image/*,video/*" class="file-input-hidden">
+            
+            <div class="ig-upload-placeholder" id="ig-upload-placeholder-content">
+              <i class="fa-regular fa-images"></i>
+              <p>Drag photos and videos here</p>
+              <button type="button" class="btn btn-ig-blue-sm">Select from computer</button>
+            </div>
+            
+            <div class="ig-upload-preview hidden" id="ig-upload-preview-container">
+              <div class="ig-preview-media-wrapper" id="ig-preview-media-wrapper">
+                <!-- Image or video goes here -->
+              </div>
+              <button type="button" class="ig-remove-preview-btn" onclick="clearInstagramSelectedMedia(event)">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right half: Info inputs (Caption, platform select) -->
+          <div class="ig-create-details-section">
+            <div class="ig-composer-user-header">
+              <img src="" alt="Avatar" class="avatar-sm current-user-avatar-sm">
+              <span class="ig-composer-username" id="ig-modal-username">username</span>
+            </div>
+            
+            <!-- Caption Input -->
+            <div class="ig-form-group">
+              <textarea id="ig-post-desc" name="description" placeholder="Write a caption..." required maxlength="5000"></textarea>
+              <div class="ig-caption-footer">
+                <i class="fa-regular fa-face-smile"></i>
+                <span class="ig-char-counter"><span id="ig-composer-char-count">0</span> / 2,200</span>
+              </div>
+            </div>
+
+            <!-- Title (Required by Schema) -->
+            <div class="ig-form-group-flat">
+              <input type="text" id="ig-post-title" name="title" placeholder="Add Title (Required)" required maxlength="120">
+            </div>
+
+            <!-- Publish Target -->
+            <div class="ig-form-group-flat">
+              <label for="ig-post-platform">Publish Target</label>
+              <select id="ig-post-platform" name="platform">
+                <option value="instagram" selected>Instagram Feed</option>
+                <option value="twitter">Twitter Draft</option>
+                <option value="reddit">Reddit Subreddit</option>
+              </select>
+            </div>
+
+            <!-- Hidden input for status, which we update dynamically via buttons -->
+            <input type="hidden" id="ig-post-status" name="status" value="draft">
+
+            <!-- Schedule Time Picker -->
+            <div class="ig-form-group-flat hidden" id="ig-schedule-time-group">
+              <label for="ig-post-schedule">Schedule Date & Time</label>
+              <input type="datetime-local" id="ig-post-schedule" name="scheduleAt">
+            </div>
+
+            <!-- Post & Schedule Actions Group -->
+            <div class="ig-action-buttons-group">
+              <button type="button" class="btn-ig-action btn-ig-draft" id="btn-ig-save-draft">Save Draft</button>
+              <button type="button" class="btn-ig-action btn-ig-post" id="btn-ig-post-now">Post Now</button>
+              <button type="button" class="btn-ig-action btn-ig-schedule" id="btn-ig-schedule-post">Schedule</button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ACCOUNT SWITCHER -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="account-switcher-modal">
+    <div class="tw-modal-card">
+      <div class="tw-modal-header">
+        <h3>Simulated Sandbox Accounts</h3>
+        <button class="close-modal-btn" onclick="closeAccountSwitcherModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="tw-modal-body">
+        <div class="modal-accounts-grid" id="modal-accounts-container">
+          <!-- Loaded Dynamically -->
+        </div>
+        
+        <!-- Registration Form inside modal -->
+        <div class="modal-add-account-section">
+          <h4>Create New Simulation Profile</h4>
+          <form id="modal-add-user-form" class="modal-horizontal-form">
+            <input type="text" id="m-user-display" placeholder="Display Name" required>
+            <input type="text" id="m-user-username" placeholder="username" required>
+            <input type="email" id="m-user-email" placeholder="Email" required>
+            <button type="submit" class="btn btn-tw-blue">Create Profile</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: TWITTER REPLY -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="tw-reply-modal">
+    <div class="tw-modal-card reply-modal">
+      <div class="tw-modal-header">
+        <button class="close-modal-btn" onclick="closeTwitterReplyModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="tw-modal-body">
+        <div class="tw-reply-parent-tweet" id="tw-modal-parent-tweet">
+          <!-- Parent tweet rendered dynamically -->
+        </div>
+        <div class="tw-reply-input-section">
+          <img src="" alt="Avatar" class="tw-user-avatar current-user-avatar-sm">
+          <div class="tw-reply-composer">
+            <textarea id="tw-reply-textarea" placeholder="Post your reply" maxlength="280"></textarea>
+            <div class="tw-reply-actions">
+              <div></div>
+              <div class="tw-reply-submit">
+                <span class="tw-char-count" id="tw-reply-char-counter">280</span>
+                <button class="btn btn-tw-blue" id="btn-post-tw-reply">Reply</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
