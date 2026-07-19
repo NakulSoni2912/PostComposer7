@@ -20,11 +20,15 @@ const state = {
 };
 
 // Endpoints
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? (window.location.port === '5000' ? '' : 'http://localhost:5000')
+  : 'https://post-composer.onrender.com';
+
 const API = {
-  composer: '/api/composer-posts',
-  tweets: '/api/tweets',
-  users: '/api/users',
-  auth: '/api/auth'
+  composer: `${BACKEND_URL}/api/composer-posts`,
+  tweets: `${BACKEND_URL}/api/tweets`,
+  users: `${BACKEND_URL}/api/users`,
+  auth: `${BACKEND_URL}/api/auth`
 };
 
 // DOM Nodes
@@ -872,7 +876,7 @@ function renderInstagramFeed() {
     // Resolve Media tag (image or video)
     let mediaHTML = '';
     if (post.mediaUrl) {
-      const fullUrl = post.mediaUrl.startsWith('http') ? post.mediaUrl : post.mediaUrl;
+      const fullUrl = post.mediaUrl.startsWith('http') ? post.mediaUrl : `${BACKEND_URL}${post.mediaUrl}`;
       if (post.mediaUrl.endsWith('.mp4') || post.mediaUrl.endsWith('.webm')) {
         mediaHTML = `<video src="${fullUrl}" autoplay loop muted playsinline></video>`;
       } else {
@@ -1068,7 +1072,7 @@ async function startEditInstagramPost(postId) {
         els.igUploadPlaceholder.classList.add('hidden');
         els.igUploadPreview.classList.remove('hidden');
         
-        const fullUrl = post.mediaUrl.startsWith('http') ? post.mediaUrl : post.mediaUrl;
+        const fullUrl = post.mediaUrl.startsWith('http') ? post.mediaUrl : `${BACKEND_URL}${post.mediaUrl}`;
         if (post.mediaUrl.endsWith('.mp4') || post.mediaUrl.endsWith('.webm')) {
           els.igPreviewMediaWrapper.innerHTML = `<video src="${fullUrl}" controls autoplay loop muted></video>`;
         } else {
