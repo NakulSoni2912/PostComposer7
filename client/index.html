@@ -17,8 +17,67 @@
 </head>
 <body class="twitter-theme">
 
+  <!-- Welcome / Login Screen -->
+  <div id="welcome-screen" class="welcome-overlay">
+    <div class="welcome-background-glow">
+      <div class="glow-orb orb-twitter active" id="orb-twitter"></div>
+      <div class="glow-orb orb-instagram" id="orb-instagram"></div>
+    </div>
+    <div class="welcome-card">
+      <div class="welcome-logo-container">
+        <div class="welcome-brand-mark">
+          <div class="brand-logo-glow"></div>
+          <div class="brand-logo-icon-wrapper">
+            <i class="fa-solid fa-square-share-nodes"></i>
+          </div>
+        </div>
+        <h1>Social Sandbox</h1>
+        <p class="welcome-subtitle">A Unified Space for Twitter & Instagram Clones</p>
+      </div>
+      <form id="welcome-form" class="welcome-form">
+        <div class="welcome-input-group">
+          <label for="welcome-name">Your Name</label>
+          <div class="input-with-icon">
+            <i class="fa-regular fa-user input-icon"></i>
+            <input type="text" id="welcome-name" placeholder="Enter your display name" required autocomplete="off">
+          </div>
+        </div>
+        <div class="welcome-input-group">
+          <label>Select Platform</label>
+          <div class="platform-selector-grid">
+            <div class="platform-option active" data-value="twitter" id="platform-opt-twitter">
+              <div class="platform-option-icon">
+                <i class="fa-brands fa-twitter"></i>
+              </div>
+              <div class="platform-option-text">
+                <span class="platform-title">Twitter</span>
+                <span class="platform-desc">X Clone Feed</span>
+              </div>
+              <div class="platform-option-indicator"></div>
+            </div>
+            <div class="platform-option" data-value="instagram" id="platform-opt-instagram">
+              <div class="platform-option-icon">
+                <i class="fa-brands fa-instagram"></i>
+              </div>
+              <div class="platform-option-text">
+                <span class="platform-title">Instagram</span>
+                <span class="platform-desc">IG Creator Feed</span>
+              </div>
+              <div class="platform-option-indicator"></div>
+            </div>
+          </div>
+          <input type="hidden" id="welcome-platform" value="twitter">
+        </div>
+        <button type="submit" id="welcome-submit-btn" class="welcome-btn btn-twitter-theme">
+          <span>Enter Sandbox</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Floating Workspace Switcher -->
-  <div class="workspace-switcher-bar">
+  <div class="workspace-switcher-bar" id="workspace-switcher-bar">
     <button class="switch-tab-btn active" data-target="twitter" id="switch-btn-twitter">
       <i class="fa-brands fa-twitter"></i>
       <span>Twitter Clone</span>
@@ -26,6 +85,10 @@
     <button class="switch-tab-btn" data-target="instagram" id="switch-btn-instagram">
       <i class="fa-brands fa-instagram"></i>
       <span>Instagram Clone</span>
+    </button>
+    <button class="switch-tab-btn exit-btn" id="btn-exit-sandbox" title="Exit Sandbox">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      <span>Exit</span>
     </button>
   </div>
 

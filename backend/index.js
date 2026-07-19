@@ -8,9 +8,10 @@
  * and boot up the server.
  */
 
+const path = require('path');
 const dotenv = require('dotenv');
 // Initialize environment variables from .env file
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = require('./app'); // Express configuration layer (routes, middlewares)
 const connectDatabase = require('./config/database'); // Mongoose DB setup & data seeder

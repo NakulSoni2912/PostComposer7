@@ -34,6 +34,17 @@ const API = {
 // DOM Nodes
 const els = {
   body: document.body,
+  // Welcome screen elements
+  welcomeScreen: document.getElementById('welcome-screen'),
+  welcomeForm: document.getElementById('welcome-form'),
+  welcomeName: document.getElementById('welcome-name'),
+  welcomePlatform: document.getElementById('welcome-platform'),
+  welcomeSubmitBtn: document.getElementById('welcome-submit-btn'),
+  orbTwitter: document.getElementById('orb-twitter'),
+  orbInstagram: document.getElementById('orb-instagram'),
+  workspaceSwitcherBar: document.getElementById('workspace-switcher-bar'),
+  btnExitSandbox: document.getElementById('btn-exit-sandbox'),
+
   // Workspace Switchers
   switchBtnTwitter: document.getElementById('switch-btn-twitter'),
   switchBtnInstagram: document.getElementById('switch-btn-instagram'),
@@ -108,19 +119,245 @@ const els = {
 // INITIALIZATION
 // ----------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+  setupWelcomeScreen();
   setupWorkspaceSwitcher();
   setupTwitterComposer();
   setupInstagramComposerForm();
   setupAccountSandbox();
   
-  // Initial Hydration
-  initializeAllData();
+  // Initial Hydration only if we've entered the sandbox
+  if (localStorage.getItem('sandbox_entered') === 'true') {
+    initializeAllData();
+  }
 });
 
 async function initializeAllData() {
   await hydrateUserContexts();
   fetchTweets();
   fetchInstagramPosts();
+}
+
+// ----------------------------------------------------
+// WELCOME SCREEN / LANDING PAGE FLOW
+// ----------------------------------------------------
+function setupWelcomeScreen() {
+  const isEntered = localStorage.getItem('sandbox_entered') === 'true';
+  const platformOptions = document.querySelectorAll('.platform-option');
+  const hiddenInput = document.getElementById('welcome-platform');
+
+  // Bind platform card options click events
+  platformOptions.forEach(opt => {
+    opt.onclick = () => {
+      platformOptions.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      const val = opt.getAttribute('data-value');
+      if (hiddenInput) {
+        hiddenInput.value = val;
+      }
+      updateWelcomeFormTheme(val);
+    };
+  });
+  
+  if (isEntered) {
+    if (els.welcomeScreen) {
+      els.welcomeScreen.classList.add('hidden');
+    }
+    if (els.workspaceSwitcherBar) {
+      els.workspaceSwitcherBar.classList.remove('hidden');
+    }
+    const platform = state.activeWorkspace;
+    
+    // Sync UI selection state
+    platformOptions.forEach(o => o.classList.remove('active'));
+    const currentOpt = document.getElementById(`platform-opt-${platform}`);
+    if (currentOpt) currentOpt.classList.add('active');
+    if (hiddenInput) hiddenInput.value = platform;
+    
+    updateWelcomeFormTheme(platform);
+  } else {
+    if (els.welcomeScreen) {
+      els.welcomeScreen.classList.remove('hidden');
+    }
+    if (els.workspaceSwitcherBar) {
+      els.workspaceSwitcherBar.classList.add('hidden');
+    }
+    
+    // Sync default UI selection state
+    platformOptions.forEach(o => o.classList.remove('active'));
+    const defaultOpt = document.getElementById('platform-opt-twitter');
+    if (defaultOpt) defaultOpt.classList.add('active');
+    if (hiddenInput) hiddenInput.value = 'twitter';
+    
+    updateWelcomeFormTheme('twitter');
+  }
+
+  // Handle welcome form submission
+  if (els.welcomeForm) {
+    els.welcomeForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const name = els.welcomeName ? els.welcomeName.value.trim() : '';
+      const platform = hiddenInput ? hiddenInput.value : 'twitter';
+
+      if (!name) {
+        showToast('Please enter your name.', 'error');
+        return;
+      }
+
+      // Disable button to prevent double submission
+      if (els.welcomeSubmitBtn) {
+        els.welcomeSubmitBtn.disabled = true;
+        els.welcomeSubmitBtn.dataset.originalHtml = els.welcomeSubmitBtn.innerHTML;
+        els.welcomeSubmitBtn.innerHTML = `<span>Connecting...</span> <i class="fa-solid fa-spinner fa-spin"></i>`;
+      }
+
+      try {
+        // Normalize name to username
+        const username = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        if (!username) {
+          showToast('Invalid name. Use alphanumeric characters.', 'error');
+          if (els.welcomeSubmitBtn) {
+            els.welcomeSubmitBtn.disabled = false;
+            els.welcomeSubmitBtn.innerHTML = els.welcomeSubmitBtn.dataset.originalHtml;
+          }
+          return;
+        }
+
+        let activeUser = null;
+
+        // 1. Check if username is already taken
+        const checkRes = await fetch(`${API.users}/username`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+
+        if (checkRes.status === 406) {
+          // Taken -> User exists. Retrieve details!
+          const getRes = await fetch(`${API.users}/username/${username}`);
+          if (getRes.ok) {
+            activeUser = await getRes.json();
+            // Make sure this ID is in simulatedUserIds
+            if (!state.simulatedUserIds.includes(activeUser._id)) {
+              state.simulatedUserIds.push(activeUser._id);
+              const stored = localStorage.getItem('omnicompose_custom_users') || '[]';
+              const parsed = JSON.parse(stored);
+              parsed.push(activeUser._id);
+              localStorage.setItem('omnicompose_custom_users', JSON.stringify(parsed));
+            }
+            showToast(`Welcome back, @${username}!`, 'success');
+          } else {
+            throw new Error('Failed to retrieve existing profile.');
+          }
+        } else {
+          // Available -> Create new sandbox profile
+          const signupRes = await fetch(`${API.auth}/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              displayName: name,
+              username: username,
+              email: `${username}@sandbox.com`,
+              password: 'simulationpassword123'
+            })
+          });
+
+          if (signupRes.ok) {
+            activeUser = await signupRes.json();
+            // Add to simulation contexts
+            state.simulatedUserIds.push(activeUser._id);
+            const stored = localStorage.getItem('omnicompose_custom_users') || '[]';
+            const parsed = JSON.parse(stored);
+            parsed.push(activeUser._id);
+            localStorage.setItem('omnicompose_custom_users', JSON.stringify(parsed));
+            showToast(`Simulation profile @${username} registered in Atlas!`, 'success');
+          } else {
+            const errMsg = await signupRes.json();
+            throw new Error(errMsg.message || errMsg || 'Signup failed.');
+          }
+        }
+
+        if (activeUser) {
+          // Apply login details
+          state.activeUserId = activeUser._id;
+          state.currentUser = activeUser;
+          localStorage.setItem('omnicompose_user_id', activeUser._id);
+          localStorage.setItem('sandbox_entered', 'true');
+          
+          // Setup switcher theme and workspace
+          state.activeWorkspace = platform;
+          localStorage.setItem('omnicompose_workspace', platform);
+          
+          // Hydrate feed contexts
+          await initializeAllData();
+          
+          // Switch view
+          setupWorkspaceSwitcher();
+
+          // Animate screen transition
+          if (els.welcomeScreen) {
+            els.welcomeScreen.classList.add('fade-out');
+            setTimeout(() => {
+              els.welcomeScreen.classList.add('hidden');
+              if (els.workspaceSwitcherBar) {
+                els.workspaceSwitcherBar.classList.remove('hidden');
+              }
+            }, 500);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Error configuring sandbox account.', 'error');
+      } finally {
+        if (els.welcomeSubmitBtn) {
+          els.welcomeSubmitBtn.disabled = false;
+          els.welcomeSubmitBtn.innerHTML = els.welcomeSubmitBtn.dataset.originalHtml || 'Enter Sandbox';
+        }
+      }
+    };
+  }
+
+  // Handle Exit Sandbox
+  if (els.btnExitSandbox) {
+    els.btnExitSandbox.onclick = () => {
+      localStorage.removeItem('sandbox_entered');
+      // Reset welcome inputs
+      if (els.welcomeName) els.welcomeName.value = '';
+      
+      // Reset platform options
+      platformOptions.forEach(o => o.classList.remove('active'));
+      const defaultOpt = document.getElementById('platform-opt-twitter');
+      if (defaultOpt) defaultOpt.classList.add('active');
+      if (hiddenInput) hiddenInput.value = 'twitter';
+      
+      updateWelcomeFormTheme('twitter');
+
+      // Show screen
+      if (els.welcomeScreen) {
+        els.welcomeScreen.classList.remove('fade-out');
+        els.welcomeScreen.classList.remove('hidden');
+      }
+      if (els.workspaceSwitcherBar) {
+        els.workspaceSwitcherBar.classList.add('hidden');
+      }
+      showToast('Exited sandbox workspace.', 'info');
+    };
+  }
+}
+
+function updateWelcomeFormTheme(platform) {
+  if (platform === 'twitter') {
+    document.documentElement.style.setProperty('--accent-theme', '#1d9bf0');
+    document.documentElement.style.setProperty('--accent-glow', 'rgba(29, 155, 240, 0.15)');
+    if (els.orbTwitter) els.orbTwitter.classList.add('active');
+    if (els.orbInstagram) els.orbInstagram.classList.remove('active');
+    if (els.welcomeSubmitBtn) els.welcomeSubmitBtn.className = 'welcome-btn btn-twitter-theme';
+  } else {
+    document.documentElement.style.setProperty('--accent-theme', '#dc2743');
+    document.documentElement.style.setProperty('--accent-glow', 'rgba(220, 39, 99, 0.15)');
+    if (els.orbTwitter) els.orbTwitter.classList.remove('active');
+    if (els.orbInstagram) els.orbInstagram.classList.add('active');
+    if (els.welcomeSubmitBtn) els.welcomeSubmitBtn.className = 'welcome-btn btn-instagram-theme';
+  }
 }
 
 // ----------------------------------------------------
@@ -618,6 +855,14 @@ function setupInstagramComposerForm() {
       limitSpan.innerHTML = `<span id="ig-composer-char-count">${currentLen}</span> / 5,000`;
     }
   };
+
+  // Trigger file explorer when clicking custom select button
+  const selectMediaBtn = els.igUploadPlaceholder ? els.igUploadPlaceholder.querySelector('.btn-ig-blue-sm') : null;
+  if (selectMediaBtn) {
+    selectMediaBtn.onclick = () => {
+      if (els.igPostMedia) els.igPostMedia.click();
+    };
+  }
 
   // File Drag-Drop
   els.igPostMedia.onchange = (e) => {
