@@ -20,12 +20,14 @@ connectDatabase();
 
 // Connect Server and Listen to Incoming Requests
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+
 app.listen(PORT, () => {
   console.log("🚀 Server Started");
   console.log(`Server is running on port ${PORT}`);
   console.log(`- API Routes configured inside app.js`);
-  console.log(`- Twitter Auth: http://localhost:${PORT}/api/auth`);
-  console.log(`- Twitter Tweets: http://localhost:${PORT}/api/tweets`);
-  console.log(`- Twitter Users: http://localhost:${PORT}/api/users`);
-  console.log(`- Instagram Composer: http://localhost:${PORT}/api/composer-posts`);
+  console.log(`- Twitter Auth: ${HOST}/api/auth`);
+  console.log(`- Twitter Tweets: ${HOST}/api/tweets`);
+  console.log(`- Twitter Users: ${HOST}/api/users`);
+  console.log(`- Instagram Composer: ${HOST}/api/composer-posts`);
 });
