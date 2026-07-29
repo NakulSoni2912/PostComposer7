@@ -1,0 +1,13 @@
+{
+  "name": "mult-post-composer",
+  "version": "1.0.0",
+  "description": "Unified Social Sandbox: Twitter & Instagram Post Composer",
+  "scripts": {
+    "install-backend": "npm install --prefix backend",
+    "build": "npm run install-backend",
+    "start": "node backend/index.js"
+  },
+  "dependencies": {
+    "mongodb": "^7.5.0"
+  }
+}
