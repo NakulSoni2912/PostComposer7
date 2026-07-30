@@ -33,38 +33,48 @@ exports.editTweet = async (req, res) => {
 // Delete tweet
 exports.deleteTweet = async (req, res) => {
     try {
+        const tweet = await Tweet.findById(req.params.id);
+        if (!tweet) {
+            return res.status(404).json('Tweet not found');
+        }
+
         const user = await User.findByIdAndUpdate(req.body.userId, {
             $pull: { tweets: req.params.id }
         }, { new: true });
 
-        const tweet = await Tweet.findById(req.params.id);
+        const updatePromises = [];
 
         // Removing replies, likes and retweets from other users that interacted with tweet
         if (tweet.replies.length > 0) {
-            tweet.replies.forEach(async replyId => {
-                const reply = await Tweet.findById(replyId);
-                await User.findByIdAndUpdate(reply.userId, {
-                    $pull: { tweets: replyId }
-                });
-                await Tweet.findByIdAndDelete(replyId);
+            tweet.replies.forEach(replyId => {
+                updatePromises.push((async () => {
+                    const reply = await Tweet.findById(replyId);
+                    if (reply) {
+                        await User.findByIdAndUpdate(reply.userId, {
+                            $pull: { tweets: replyId }
+                        });
+                        await Tweet.findByIdAndDelete(replyId);
+                    }
+                })());
             });
         }
 
         if (tweet.likes.length > 0) {
-            tweet.likes.forEach(async userId => {
-                await User.findByIdAndUpdate(userId, {
+            tweet.likes.forEach(userId => {
+                updatePromises.push(User.findByIdAndUpdate(userId, {
                     $pull: { likes: req.params.id }
-                });
+                }));
             });
         }
         if (tweet.retweets.length > 0) {
-            tweet.retweets.forEach(async userId => {
-                await User.findByIdAndUpdate(userId, {
+            tweet.retweets.forEach(userId => {
+                updatePromises.push(User.findByIdAndUpdate(userId, {
                     $pull: { retweets: req.params.id }
-                });
+                }));
             });
         }
 
+        await Promise.all(updatePromises);
         await Tweet.findByIdAndDelete(req.params.id);
         res.status(200).json(user);
     } catch (err) {
@@ -237,14 +247,16 @@ exports.removeBookmark = async (req, res) => {
 exports.getTweetLikes = async (req, res) => {
     try {
         const tweet = await Tweet.findById(req.params.id);
-        const users = [];
-        tweet.likes.forEach(async (userId, idx, array) => {
-            const user = await User.findById(userId);
-            users.push(user);
-            if (users.length === array.length) {
-                res.status(200).json(users);
-            }
-        });
+        if (!tweet) {
+            return res.status(404).json('Tweet not found');
+        }
+        if (tweet.likes.length === 0) {
+            return res.status(200).json([]);
+        }
+        const users = await Promise.all(
+            tweet.likes.map(userId => User.findById(userId))
+        );
+        res.status(200).json(users.filter(u => u !== null));
     } catch (err) {
         res.status(500).json(err);
     }
@@ -254,14 +266,16 @@ exports.getTweetLikes = async (req, res) => {
 exports.getTweetRetweets = async (req, res) => {
     try {
         const tweet = await Tweet.findById(req.params.id);
-        const users = [];
-        tweet.retweets.forEach(async (userId, idx, array) => {
-            const user = await User.findById(userId);
-            users.push(user);
-            if (users.length === array.length) {
-                res.status(200).json(users);
-            }
-        })
+        if (!tweet) {
+            return res.status(404).json('Tweet not found');
+        }
+        if (tweet.retweets.length === 0) {
+            return res.status(200).json([]);
+        }
+        const users = await Promise.all(
+            tweet.retweets.map(userId => User.findById(userId))
+        );
+        res.status(200).json(users.filter(u => u !== null));
     } catch (err) {
         res.status(500).json(err);
     }

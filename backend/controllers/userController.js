@@ -6,6 +6,9 @@ const bcrypt = require('bcryptjs');
 exports.getUser = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json('User not found');
+        }
         // Hide details that another user doesn't need to see
         const { email, password, bookmarks, isAdmin, updatedAt, ...otherDetails } = user._doc;
         res.status(200).json(otherDetails);
@@ -28,6 +31,9 @@ exports.getActiveUser = async (req, res) => {
 exports.getUserByUsername = async (req, res) => {
     try {
         const user = await User.findOne({ username: req.params.username });
+        if (!user) {
+            return res.status(404).json('User not found');
+        }
         const { email, password, isAdmin, updatedAt, ...otherDetails } = user._doc;
         res.status(200).json(otherDetails);
     } catch (err) {
@@ -61,44 +67,50 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json('User not found');
+        }
+
+        const updatePromises = [];
 
         // Remove everything user has interacted with including other users and tweets
         if (user.following.length > 0) {
             const userFollowingList = user.following;
-            userFollowingList.forEach(async userId => {
-                await User.findByIdAndUpdate(userId, {
+            userFollowingList.forEach(userId => {
+                updatePromises.push(User.findByIdAndUpdate(userId, {
                     $pull: { followers: req.params.id }
-                });
+                }));
             });
         }
 
         if (user.followers.length > 0) {
             const userFollowers = user.followers;
-            userFollowers.forEach(async userId => {
-                await User.findByIdAndUpdate(userId, {
+            userFollowers.forEach(userId => {
+                updatePromises.push(User.findByIdAndUpdate(userId, {
                     $pull: { following: req.params.id }
-                });
+                }));
             });
         }
 
         if (user.likes.length > 0) {
             const likes = user.likes;
-            likes.forEach(async tweetId => {
-                await Tweet.findByIdAndUpdate(tweetId, {
+            likes.forEach(tweetId => {
+                updatePromises.push(Tweet.findByIdAndUpdate(tweetId, {
                     $pull: { likes: req.params.id }
-                });
+                }));
             });
         }
 
         if (user.retweets.length > 0) {
             const retweets = user.retweets;
-            retweets.forEach(async tweetId => {
-                await Tweet.findByIdAndUpdate(tweetId, {
+            retweets.forEach(tweetId => {
+                updatePromises.push(Tweet.findByIdAndUpdate(tweetId, {
                     $pull: { retweets: req.params.id }
-                });
+                }));
             });
         }
         
+        await Promise.all(updatePromises);
         await User.findByIdAndDelete(req.params.id);
         res.status(200).json('Account has been deleted');
     } catch (err) {
@@ -223,15 +235,21 @@ exports.clearBookmarks = async (req, res) => {
 exports.getUserFollowers = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
-        const followers = [];
-        user.followers.forEach(async (userId, idx, array) => {
-            const follower = await User.findById(userId);
-            const { email, password, bookmarks, isAdmin, updatedAt, ...otherDetails } = follower._doc;
-            followers.push(otherDetails);
-            if (followers.length === array.length) {
-                res.status(200).json(followers);
-            }
-        });
+        if (!user) {
+            return res.status(404).json('User not found');
+        }
+        if (user.followers.length === 0) {
+            return res.status(200).json([]);
+        }
+        const followers = await Promise.all(
+            user.followers.map(async (userId) => {
+                const follower = await User.findById(userId);
+                if (!follower) return null;
+                const { email, password, bookmarks, isAdmin, updatedAt, ...otherDetails } = follower._doc;
+                return otherDetails;
+            })
+        );
+        res.status(200).json(followers.filter(f => f !== null));
     } catch (err) {
         res.status(500).json(err);
     }
@@ -241,15 +259,21 @@ exports.getUserFollowers = async (req, res) => {
 exports.getUserFollowing = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
-        const following = [];
-        user.following.forEach(async (userId, idx, array) => {
-            const user = await User.findById(userId);
-            const { email, password, bookmarks, isAdmin, updatedAt, ...otherDetails } = user._doc;
-            following.push(otherDetails);
-            if (following.length === array.length) {
-                res.status(200).json(following);
-            }
-        });
+        if (!user) {
+            return res.status(404).json('User not found');
+        }
+        if (user.following.length === 0) {
+            return res.status(200).json([]);
+        }
+        const following = await Promise.all(
+            user.following.map(async (userId) => {
+                const followedUser = await User.findById(userId);
+                if (!followedUser) return null;
+                const { email, password, bookmarks, isAdmin, updatedAt, ...otherDetails } = followedUser._doc;
+                return otherDetails;
+            })
+        );
+        res.status(200).json(following.filter(f => f !== null));
     } catch (err) {
         res.status(500).json(err);
     }
