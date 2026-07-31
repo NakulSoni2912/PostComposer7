@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Social Sandbox // Twitter & Instagram Clones</title>
+  <title>Ur Posts // Twitter & Instagram Clones</title>
   
   <!-- Font integration -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,8 +31,8 @@
             <i class="fa-solid fa-square-share-nodes"></i>
           </div>
         </div>
-        <h1>Social Sandbox</h1>
-        <p class="welcome-subtitle">A Unified Space for Twitter & Instagram Clones</p>
+        <h1>Ur Posts</h1>
+        <p class="welcome-subtitle">A Unified Space for Twitter & Instagram feeds</p>
       </div>
       <form id="welcome-form" class="welcome-form">
         <div class="welcome-input-group">
@@ -69,7 +69,7 @@
           <input type="hidden" id="welcome-platform" value="twitter">
         </div>
         <button type="submit" id="welcome-submit-btn" class="welcome-btn btn-twitter-theme">
-          <span>Enter Sandbox</span>
+          <span>Enter Ur Posts</span>
           <i class="fa-solid fa-arrow-right"></i>
         </button>
       </form>
@@ -78,15 +78,16 @@
 
   <!-- Floating Workspace Switcher -->
   <div class="workspace-switcher-bar" id="workspace-switcher-bar">
+    <div class="switch-slider" id="switch-slider"></div>
     <button class="switch-tab-btn active" data-target="twitter" id="switch-btn-twitter">
       <i class="fa-brands fa-twitter"></i>
-      <span>Twitter Clone</span>
+      <span>Twitter</span>
     </button>
     <button class="switch-tab-btn" data-target="instagram" id="switch-btn-instagram">
       <i class="fa-brands fa-instagram"></i>
-      <span>Instagram Clone</span>
+      <span>Instagram</span>
     </button>
-    <button class="switch-tab-btn exit-btn" id="btn-exit-sandbox" title="Exit Sandbox">
+    <button class="switch-tab-btn exit-btn" id="btn-exit-sandbox" title="Exit Ur Posts">
       <i class="fa-solid fa-arrow-right-from-bracket"></i>
       <span>Exit</span>
     </button>
@@ -145,7 +146,13 @@
               <button class="tw-tool-btn"><i class="fa-regular fa-calendar"></i></button>
             </div>
             <div class="tw-composer-submit">
-              <span class="tw-char-count" id="tw-char-counter">280</span>
+              <div class="tw-char-progress-wrapper">
+                <svg class="tw-char-progress-svg" width="24" height="24" viewBox="0 0 24 24">
+                  <circle class="tw-progress-bg" cx="12" cy="12" r="10" stroke-width="2.5" fill="none" />
+                  <circle class="tw-progress-fg" id="tw-char-progress-ring" cx="12" cy="12" r="10" stroke-width="2.5" fill="none" stroke-dasharray="62.8" stroke-dashoffset="62.8" />
+                </svg>
+                <span class="tw-char-count" id="tw-char-counter">280</span>
+              </div>
               <button class="btn btn-tw-blue" id="btn-post-tweet">Post</button>
             </div>
           </div>
@@ -282,7 +289,7 @@
         </div>
 
         <div class="ig-footer-links">
-          <p>© 2026 INSTAGRAM SANDBOX FROM DEEPMIND ANTIGRAVITY</p>
+          <p>© 2026 UR POSTS FROM DEEPMIND ANTIGRAVITY</p>
         </div>
       </aside>
     </main>
@@ -383,7 +390,7 @@
   <div class="modal-overlay hidden" id="account-switcher-modal">
     <div class="tw-modal-card">
       <div class="tw-modal-header">
-        <h3>Simulated Sandbox Accounts</h3>
+        <h3>Simulated Ur Posts Accounts</h3>
         <button class="close-modal-btn" onclick="closeAccountSwitcherModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="tw-modal-body">
@@ -424,7 +431,13 @@
             <div class="tw-reply-actions">
               <div></div>
               <div class="tw-reply-submit">
-                <span class="tw-char-count" id="tw-reply-char-counter">280</span>
+                <div class="tw-char-progress-wrapper">
+                  <svg class="tw-char-progress-svg" width="24" height="24" viewBox="0 0 24 24">
+                    <circle class="tw-progress-bg" cx="12" cy="12" r="10" stroke-width="2.5" fill="none" />
+                    <circle class="tw-progress-fg" id="tw-reply-progress-ring" cx="12" cy="12" r="10" stroke-width="2.5" fill="none" stroke-dasharray="62.8" stroke-dashoffset="62.8" />
+                  </svg>
+                  <span class="tw-char-count" id="tw-reply-char-counter">280</span>
+                </div>
                 <button class="btn btn-tw-blue" id="btn-post-tw-reply">Reply</button>
               </div>
             </div>

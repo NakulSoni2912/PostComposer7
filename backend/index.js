@@ -20,7 +20,7 @@ const connectDatabase = require('./config/database'); // Mongoose DB setup & dat
 connectDatabase();
 
 // Connect Server and Listen to Incoming Requests
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const HOST = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
 
 app.listen(PORT, () => {

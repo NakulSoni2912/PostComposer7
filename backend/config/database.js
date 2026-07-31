@@ -18,6 +18,12 @@ const connectDatabase = () => {
     }).catch((error) => {
         console.error("❌ MongoDB Atlas Connection Failed:", error);
         console.log("Database connection error:", error);
+        try {
+            const mockDb = require('./mockDb');
+            mockDb.setupMocks();
+        } catch (mockErr) {
+            console.error("❌ Failed to initialize MockDB fallback:", mockErr);
+        }
     });
 }
 

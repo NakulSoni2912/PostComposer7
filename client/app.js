@@ -2,7 +2,7 @@
 
 // Application State
 const state = {
-  activeUserId: localStorage.getItem('omnicompose_user_id') || '60c72b2f9b1d8e1234567890',
+  activeUserId: localStorage.getItem('urposts_user_id') || '60c72b2f9b1d8e1234567890',
   currentUser: null,
   simulatedUserIds: [
     '60c72b2f9b1d8e1234567890',
@@ -12,7 +12,7 @@ const state = {
   users: [],
   tweets: [],
   composerPosts: [], // Instagram and drafts
-  activeWorkspace: localStorage.getItem('omnicompose_workspace') || 'twitter',
+  activeWorkspace: localStorage.getItem('urposts_workspace') || 'twitter',
   
   // Modals state
   replyingToTweetId: null,
@@ -21,7 +21,7 @@ const state = {
 
 // Endpoints
 const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? (window.location.port === '5000' ? '' : 'http://localhost:5000')
+  ? (window.location.port === '5001' ? '' : 'http://localhost:5001')
   : 'https://postcomposer-backend.onrender.com';
 
 const API = {
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupAccountSandbox();
   
   // Initial Hydration only if we've entered the sandbox
-  if (localStorage.getItem('sandbox_entered') === 'true') {
+  if (localStorage.getItem('urposts_entered') === 'true') {
     initializeAllData();
   }
 });
@@ -141,7 +141,7 @@ async function initializeAllData() {
 // WELCOME SCREEN / LANDING PAGE FLOW
 // ----------------------------------------------------
 function setupWelcomeScreen() {
-  const isEntered = localStorage.getItem('sandbox_entered') === 'true';
+  const isEntered = localStorage.getItem('urposts_entered') === 'true';
   const platformOptions = document.querySelectorAll('.platform-option');
   const hiddenInput = document.getElementById('welcome-platform');
 
@@ -239,10 +239,10 @@ function setupWelcomeScreen() {
             // Make sure this ID is in simulatedUserIds
             if (!state.simulatedUserIds.includes(activeUser._id)) {
               state.simulatedUserIds.push(activeUser._id);
-              const stored = localStorage.getItem('omnicompose_custom_users') || '[]';
+              const stored = localStorage.getItem('urposts_custom_users') || '[]';
               const parsed = JSON.parse(stored);
               parsed.push(activeUser._id);
-              localStorage.setItem('omnicompose_custom_users', JSON.stringify(parsed));
+              localStorage.setItem('urposts_custom_users', JSON.stringify(parsed));
             }
             showToast(`Welcome back, @${username}!`, 'success');
           } else {
@@ -265,10 +265,10 @@ function setupWelcomeScreen() {
             activeUser = await signupRes.json();
             // Add to simulation contexts
             state.simulatedUserIds.push(activeUser._id);
-            const stored = localStorage.getItem('omnicompose_custom_users') || '[]';
+            const stored = localStorage.getItem('urposts_custom_users') || '[]';
             const parsed = JSON.parse(stored);
             parsed.push(activeUser._id);
-            localStorage.setItem('omnicompose_custom_users', JSON.stringify(parsed));
+            localStorage.setItem('urposts_custom_users', JSON.stringify(parsed));
             showToast(`Simulation profile @${username} registered in Atlas!`, 'success');
           } else {
             const errMsg = await signupRes.json();
@@ -280,12 +280,12 @@ function setupWelcomeScreen() {
           // Apply login details
           state.activeUserId = activeUser._id;
           state.currentUser = activeUser;
-          localStorage.setItem('omnicompose_user_id', activeUser._id);
-          localStorage.setItem('sandbox_entered', 'true');
+          localStorage.setItem('urposts_user_id', activeUser._id);
+          localStorage.setItem('urposts_entered', 'true');
           
           // Setup switcher theme and workspace
           state.activeWorkspace = platform;
-          localStorage.setItem('omnicompose_workspace', platform);
+          localStorage.setItem('urposts_workspace', platform);
           
           // Hydrate feed contexts
           await initializeAllData();
@@ -310,7 +310,7 @@ function setupWelcomeScreen() {
       } finally {
         if (els.welcomeSubmitBtn) {
           els.welcomeSubmitBtn.disabled = false;
-          els.welcomeSubmitBtn.innerHTML = els.welcomeSubmitBtn.dataset.originalHtml || 'Enter Sandbox';
+          els.welcomeSubmitBtn.innerHTML = els.welcomeSubmitBtn.dataset.originalHtml || 'Enter Ur Posts';
         }
       }
     };
@@ -319,7 +319,7 @@ function setupWelcomeScreen() {
   // Handle Exit Sandbox
   if (els.btnExitSandbox) {
     els.btnExitSandbox.onclick = () => {
-      localStorage.removeItem('sandbox_entered');
+      localStorage.removeItem('urposts_entered');
       // Reset welcome inputs
       if (els.welcomeName) els.welcomeName.value = '';
       
@@ -339,7 +339,7 @@ function setupWelcomeScreen() {
       if (els.workspaceSwitcherBar) {
         els.workspaceSwitcherBar.classList.add('hidden');
       }
-      showToast('Exited sandbox workspace.', 'info');
+      showToast('Exited Ur Posts workspace.', 'info');
     };
   }
 }
@@ -366,7 +366,7 @@ function updateWelcomeFormTheme(platform) {
 function setupWorkspaceSwitcher() {
   const switchWorkspace = (target) => {
     state.activeWorkspace = target;
-    localStorage.setItem('omnicompose_workspace', target);
+    localStorage.setItem('urposts_workspace', target);
     
     if (target === 'twitter') {
       els.body.className = 'twitter-theme';
@@ -383,6 +383,16 @@ function setupWorkspaceSwitcher() {
       els.igWorkspace.classList.remove('hidden');
       fetchInstagramPosts();
     }
+
+    // Position slider pill
+    const slider = document.getElementById('switch-slider');
+    const activeBtn = target === 'twitter' ? els.switchBtnTwitter : els.switchBtnInstagram;
+    if (slider && activeBtn) {
+      setTimeout(() => {
+        slider.style.left = `${activeBtn.offsetLeft}px`;
+        slider.style.width = `${activeBtn.offsetWidth}px`;
+      }, 50);
+    }
   };
 
   els.switchBtnTwitter.onclick = () => switchWorkspace('twitter');
@@ -390,6 +400,16 @@ function setupWorkspaceSwitcher() {
   
   // Apply saved/default workspace
   switchWorkspace(state.activeWorkspace);
+
+  // Re-adjust slider on resize
+  window.addEventListener('resize', () => {
+    const slider = document.getElementById('switch-slider');
+    const activeBtn = state.activeWorkspace === 'twitter' ? els.switchBtnTwitter : els.switchBtnInstagram;
+    if (slider && activeBtn) {
+      slider.style.left = `${activeBtn.offsetLeft}px`;
+      slider.style.width = `${activeBtn.offsetWidth}px`;
+    }
+  });
 }
 
 // Toast alerts
@@ -421,7 +441,7 @@ async function hydrateUserContexts() {
   state.users = [];
   
   // Custom user IDs saved in localStorage
-  const storedIds = localStorage.getItem('omnicompose_custom_users');
+  const storedIds = localStorage.getItem('urposts_custom_users');
   if (storedIds) {
     try {
       const parsed = JSON.parse(storedIds);
@@ -448,7 +468,7 @@ async function hydrateUserContexts() {
   if (!active && state.users.length > 0) {
     active = state.users[0];
     state.activeUserId = active._id;
-    localStorage.setItem('omnicompose_user_id', active._id);
+    localStorage.setItem('urposts_user_id', active._id);
   }
 
   if (active) {
@@ -487,7 +507,7 @@ function getAvatarUrl(username) {
 
 function switchUserContext(userId) {
   state.activeUserId = userId;
-  localStorage.setItem('omnicompose_user_id', userId);
+  localStorage.setItem('urposts_user_id', userId);
   
   const user = state.users.find(u => u._id === userId);
   if (user) {
@@ -575,10 +595,10 @@ function setupAccountSandbox() {
         showToast(`Simulation account @${username} created in Atlas!`, 'success');
         
         // Save ID locally
-        const storedIds = localStorage.getItem('omnicompose_custom_users') || '[]';
+        const storedIds = localStorage.getItem('urposts_custom_users') || '[]';
         const parsedIds = JSON.parse(storedIds);
         parsedIds.push(resData._id);
-        localStorage.setItem('omnicompose_custom_users', JSON.stringify(parsedIds));
+        localStorage.setItem('urposts_custom_users', JSON.stringify(parsedIds));
         
         els.modalAddUserForm.reset();
         await hydrateUserContexts();
@@ -625,10 +645,39 @@ function closeAccountSwitcherModal() {
 // ----------------------------------------------------
 // TWITTER CLONE METHODS
 // ----------------------------------------------------
+// Progress ring update helper
+function updateCharProgressRing(textarea, counterTextEl, ringId, maxLen) {
+  const len = textarea.value.length;
+  const remaining = maxLen - len;
+  counterTextEl.innerText = remaining;
+
+  const ringEl = document.getElementById(ringId);
+  if (ringEl) {
+    const circumference = 62.8;
+    const progress = Math.min(len / maxLen, 1);
+    const offset = circumference - progress * circumference;
+    ringEl.style.strokeDashoffset = offset;
+
+    // Color updates
+    if (len >= maxLen) {
+      ringEl.style.stroke = '#f4212e'; // red
+      counterTextEl.style.color = '#f4212e';
+    } else if (remaining <= 20) {
+      ringEl.style.stroke = '#ffd400'; // yellow
+      counterTextEl.style.color = '#ffd400';
+    } else {
+      ringEl.style.stroke = '#1d9bf0'; // blue
+      counterTextEl.style.color = ''; // reset
+    }
+  }
+}
+
 function setupTwitterComposer() {
+  // Update progress ring initially
+  updateCharProgressRing(els.twTweetTextarea, els.twCharCounter, 'tw-char-progress-ring', 280);
+
   els.twTweetTextarea.oninput = (e) => {
-    const len = e.target.value.length;
-    els.twCharCounter.innerText = 280 - len;
+    updateCharProgressRing(els.twTweetTextarea, els.twCharCounter, 'tw-char-progress-ring', 280);
   };
   
   els.btnPostTweet.onclick = () => handlePostTweet();
@@ -666,8 +715,7 @@ function setupTwitterComposer() {
   };
 
   els.twReplyTextarea.oninput = (e) => {
-    const len = e.target.value.length;
-    els.twReplyCharCounter.innerText = 280 - len;
+    updateCharProgressRing(els.twReplyTextarea, els.twReplyCharCounter, 'tw-reply-progress-ring', 280);
   };
 }
 
@@ -741,6 +789,8 @@ function renderTwitterFeed() {
     };
 
     const isLiked = tweet.likes.includes(state.activeUserId);
+    const isRetweeted = tweet.retweets && tweet.retweets.includes(state.activeUserId);
+    const isBookmarked = state.currentUser && state.currentUser.bookmarks && state.currentUser.bookmarks.includes(tweet._id);
     const dateStr = new Date(tweet.createdAt).toLocaleDateString(undefined, {
       month: 'short', day: 'numeric'
     });
@@ -761,15 +811,17 @@ function renderTwitterFeed() {
             <i class="fa-regular fa-comment"></i>
             <span>${tweet.replies ? tweet.replies.length : 0}</span>
           </button>
-          <button class="tw-tweet-action-btn" title="Retweet">
+          <button class="tw-tweet-action-btn retweet-btn ${isRetweeted ? 'retweeted' : ''}" onclick="toggleRetweetTweet(this, '${tweet._id}', ${isRetweeted})" title="Retweet">
             <i class="fa-solid fa-arrows-rotate"></i>
             <span>${tweet.retweets ? tweet.retweets.length : 0}</span>
           </button>
-          <button class="tw-tweet-action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLikeTweet('${tweet._id}', ${isLiked})">
+          <button class="tw-tweet-action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLikeTweet(this, '${tweet._id}', ${isLiked})">
             <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
             <span>${tweet.likes ? tweet.likes.length : 0}</span>
           </button>
-          <button class="tw-tweet-action-btn"><i class="fa-regular fa-bookmark"></i></button>
+          <button class="tw-tweet-action-btn bookmark-btn ${isBookmarked ? 'bookmarked' : ''}" onclick="toggleBookmarkTweet(this, '${tweet._id}', ${isBookmarked})" title="Bookmark">
+            <i class="${isBookmarked ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+          </button>
         </div>
       </div>
     `;
@@ -778,7 +830,22 @@ function renderTwitterFeed() {
   });
 }
 
-async function toggleLikeTweet(tweetId, isLiked) {
+async function toggleLikeTweet(button, tweetId, isLiked) {
+  const heart = button.querySelector('i');
+  button.classList.toggle('liked');
+  
+  if (isLiked) {
+    heart.className = 'fa-regular fa-heart';
+    const span = button.querySelector('span');
+    if (span) span.innerText = Math.max(0, parseInt(span.innerText) - 1);
+  } else {
+    heart.className = 'fa-solid fa-heart';
+    button.classList.add('pop-animation');
+    const span = button.querySelector('span');
+    if (span) span.innerText = parseInt(span.innerText) + 1;
+    setTimeout(() => button.classList.remove('pop-animation'), 400);
+  }
+
   const url = isLiked ? `${API.tweets}/${tweetId}/unlike` : `${API.tweets}/${tweetId}/like`;
   try {
     const response = await fetch(url, {
@@ -794,10 +861,66 @@ async function toggleLikeTweet(tweetId, isLiked) {
   }
 }
 
+async function toggleRetweetTweet(button, tweetId, isRetweeted) {
+  button.classList.toggle('retweeted');
+  
+  if (isRetweeted) {
+    const span = button.querySelector('span');
+    if (span) span.innerText = Math.max(0, parseInt(span.innerText) - 1);
+  } else {
+    button.classList.add('pop-animation');
+    const span = button.querySelector('span');
+    if (span) span.innerText = parseInt(span.innerText) + 1;
+    setTimeout(() => button.classList.remove('pop-animation'), 400);
+  }
+
+  const url = isRetweeted ? `${API.tweets}/${tweetId}/retweet/remove` : `${API.tweets}/${tweetId}/retweet`;
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: state.activeUserId })
+    });
+    if (response.ok) {
+      fetchTweets();
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function toggleBookmarkTweet(button, tweetId, isBookmarked) {
+  const icon = button.querySelector('i');
+  button.classList.toggle('bookmarked');
+  
+  if (isBookmarked) {
+    icon.className = 'fa-regular fa-bookmark';
+  } else {
+    button.classList.add('pop-animation');
+    icon.className = 'fa-solid fa-bookmark';
+    setTimeout(() => button.classList.remove('pop-animation'), 400);
+  }
+
+  const url = isBookmarked ? `${API.tweets}/${tweetId}/bookmark/remove` : `${API.tweets}/${tweetId}/bookmark`;
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: state.activeUserId })
+    });
+    if (response.ok) {
+      await hydrateUserContexts();
+      fetchTweets();
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 function openTwitterReplyModal(tweetId) {
   state.replyingToTweetId = tweetId;
   els.twReplyTextarea.value = '';
-  els.twReplyCharCounter.innerText = '280';
+  updateCharProgressRing(els.twReplyTextarea, els.twReplyCharCounter, 'tw-reply-progress-ring', 280);
   
   const tweet = state.tweets.find(t => t._id === tweetId);
   if (tweet) {
@@ -1233,29 +1356,32 @@ function toggleInstagramLike(btn, postId) {
 function handleInstagramDoubleTap(mediaDiv, postId) {
   // Create quick animations for double tap like
   const heart = document.createElement('i');
-  heart.className = 'fa-solid fa-heart';
+  heart.className = 'fa-solid fa-heart ig-double-tap-heart';
   heart.style.position = 'absolute';
-  heart.style.fontSize = '4.5rem';
+  heart.style.top = '50%';
+  heart.style.left = '50%';
+  heart.style.fontSize = '5.5rem';
   heart.style.color = '#fff';
   heart.style.opacity = '0';
-  heart.style.transform = 'scale(0.5)';
-  heart.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  heart.style.transform = 'translate(-50%, -50%) scale(0.5)';
+  heart.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  heart.style.textShadow = '0 0 20px rgba(255, 30, 100, 0.8), 0 0 40px rgba(255, 30, 100, 0.4)';
   
   mediaDiv.style.position = 'relative';
   mediaDiv.appendChild(heart);
 
   // Trigger anim
   setTimeout(() => {
-    heart.style.opacity = '0.9';
-    heart.style.transform = 'scale(1)';
+    heart.style.opacity = '0.95';
+    heart.style.transform = 'translate(-50%, -50%) scale(1.1) rotate(-12deg)';
   }, 10);
 
   // Remove heart
   setTimeout(() => {
     heart.style.opacity = '0';
-    heart.style.transform = 'scale(1.2)';
-    setTimeout(() => heart.remove(), 200);
-  }, 700);
+    heart.style.transform = 'translate(-50%, -50%) scale(1.6) rotate(12deg)';
+    setTimeout(() => heart.remove(), 400);
+  }, 600);
 
   const likeBtn = mediaDiv.nextElementSibling.querySelector('.ig-post-icons-left button');
   const userLikedKey = `ig_user_liked_${postId}_${state.activeUserId}`;

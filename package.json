@@ -1,7 +1,7 @@
 {
   "name": "mult-post-composer",
   "version": "1.0.0",
-  "description": "Unified Social Sandbox: Twitter & Instagram Post Composer",
+  "description": "Ur Posts: Unified Twitter & Instagram Post Composer",
   "scripts": {
     "install-backend": "npm install --prefix backend",
     "build": "npm run install-backend",
